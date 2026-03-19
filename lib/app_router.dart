@@ -17,7 +17,14 @@ class AppRouter {
         builder: (context, state) {
           // 移动端直接用 extra 传复杂对象（如 Map, List, 或自定义 Model）
           final Map<String, dynamic> args = state.extra as Map<String, dynamic>;
-          return DetailPage(id: args['id'], name: args['name']);
+          return DetailPage(
+            id: args['id'],
+            name: args['name'],
+            imageUrl: args['imageUrl'],
+            price: args['price'],
+            originalPrice: args['originalPrice'],
+            sales: args['sales'],
+          );
         },
       ),
     ],
