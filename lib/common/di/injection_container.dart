@@ -1,7 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shop/common/constants/api_constants.dart';
 import 'package:shop/common/network/interceptors/auth_interceptor.dart';
+import 'package:shop/common/network/interceptors/log_interceptor.dart'
+    as app_interceptor;
 import 'package:shop/data/datasources/local/local_storage.dart';
 import 'package:shop/data/datasources/local/token_manager.dart';
 import 'package:shop/data/datasources/remote/api_service.dart';
@@ -26,28 +29,33 @@ Future<void> init() async {
   getIt.registerLazySingleton<Dio>(() {
     final dio = Dio(
       BaseOptions(
+        baseUrl: ApiConstants.baseUrl,
         connectTimeout: const Duration(seconds: 30),
         receiveTimeout: const Duration(seconds: 30),
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        headers: {'Content-Type': 'application/json'},
       ),
     );
     dio.interceptors.addAll([
       AuthInterceptor(getIt<TokenManager>()),
-      LogInterceptor(responseBody: true),
+      app_interceptor.LogInterceptor(),
     ]);
     return dio;
   });
-  getIt.registerFactory<ApiService>(() => ApiService(getIt()));
+  getIt.registerLazySingleton<ApiService>(() => ApiService(getIt<Dio>()));
 
   getIt.registerLazySingleton<LoginRepository>(
-    () => LoginRepositoryImpl(getIt()),
+    () => LoginRepositoryImpl(getIt<ApiService>(), getIt<TokenManager>()),
   );
-  getIt.registerLazySingleton<LoginUsecase>(() => LoginUsecaseImpl(getIt()));
-  getIt.registerFactory<LoginBloc>(() => LoginBloc(getIt()));
+  getIt.registerLazySingleton<LoginUsecase>(
+    () => LoginUsecaseImpl(getIt<LoginRepository>()),
+  );
+  getIt.registerFactory<LoginBloc>(() => LoginBloc(getIt<LoginUsecase>()));
 
   getIt.registerLazySingleton<HomeRepository>(
-    () => HomeRepositoryImpl(getIt()),
+    () => HomeRepositoryImpl(getIt<ApiService>()),
   );
-  getIt.registerLazySingleton<HomeUsecase>(() => HomeUsecaseImpl(getIt()));
-  getIt.registerFactory<HomeBloc>(() => HomeBloc(getIt()));
+  getIt.registerLazySingleton<HomeUsecase>(
+    () => HomeUsecaseImpl(getIt<HomeRepository>()),
+  );
+  getIt.registerFactory<HomeBloc>(() => HomeBloc(getIt<HomeUsecase>()));
 }

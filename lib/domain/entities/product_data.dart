@@ -1,16 +1,21 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+class ProductData {
+  final String id;
+  final String name;
+  final String imageUrl;
+  final String description;
+  final double price;
+  final double originalPrice;
+  final int sales;
+  final int stock;
 
-part 'product_data.freezed.dart';
-
-@freezed
-sealed class ProductData with _$ProductData {
-  const factory ProductData({
-    required String id,
-    required String name,
-    required String imageUrl,
-    required double price,
-    required double originalPrice,
-    required int sales,
-  }) = _ProductData;
-
+  const ProductData({
+    required this.id,
+    required this.name,
+    required this.imageUrl,
+    required this.price,
+    required this.originalPrice,
+    required this.sales,
+    this.description = '',
+    this.stock = 0,
+  });
 }

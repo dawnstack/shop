@@ -1,13 +1,39 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+class UserData {
+  final String accessToken;
+  final String refreshToken;
+  final String userId;
+  final String userName;
+  final String email;
+  final String avatarUrl;
 
-part 'user_data.freezed.dart';
+  const UserData({
+    required this.accessToken,
+    required this.refreshToken,
+    required this.userId,
+    required this.userName,
+    required this.email,
+    this.avatarUrl = '',
+  });
 
-@Freezed()
-sealed class UserData with _$UserData {
-  const factory UserData({
-    required String token,
-    required String userId,
-    required String userName,
-    required String phone,
-  }) = _UserData;
+  Map<String, dynamic> toJson() {
+    return {
+      'access_token': accessToken,
+      'refresh_token': refreshToken,
+      'user_id': userId,
+      'user_name': userName,
+      'email': email,
+      'avatar_url': avatarUrl,
+    };
+  }
+
+  factory UserData.fromJson(Map<String, dynamic> json) {
+    return UserData(
+      accessToken: (json['access_token'] ?? '').toString(),
+      refreshToken: (json['refresh_token'] ?? '').toString(),
+      userId: (json['user_id'] ?? '').toString(),
+      userName: (json['user_name'] ?? '').toString(),
+      email: (json['email'] ?? '').toString(),
+      avatarUrl: (json['avatar_url'] ?? '').toString(),
+    );
+  }
 }

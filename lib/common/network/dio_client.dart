@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:shop/common/constants/api_constants.dart';
 
 class DioClient {
   late final Dio dio;
@@ -8,11 +9,10 @@ class DioClient {
   }) {
     dio = Dio(
       BaseOptions(
+        baseUrl: ApiConstants.baseUrl,
         connectTimeout: const Duration(seconds: 30),
         receiveTimeout: const Duration(seconds: 30),
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
+        headers: {'Content-Type': 'application/json'},
       ),
     );
 

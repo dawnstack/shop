@@ -1,13 +1,13 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+class CategoryData {
+  final String id;
+  final String name;
+  final String icon;
+  final int sortOrder;
 
-part 'category_data.freezed.dart';
-
-@freezed
-sealed class CategoryData with _$CategoryData {
-  const factory CategoryData({
-    required String id,
-    required String name,
-    required String icon,
-  }) = _CategoryData;
-
+  const CategoryData({
+    required this.id,
+    required this.name,
+    required this.icon,
+    this.sortOrder = 0,
+  });
 }

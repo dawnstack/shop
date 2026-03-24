@@ -1,8 +1,9 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+sealed class HomeEvent {
+  const HomeEvent();
 
-part 'home_event.freezed.dart';
+  factory HomeEvent.loading() = HomeLoading;
+}
 
-@freezed
-sealed class HomeEvent with _$HomeEvent {
-  const factory HomeEvent.loading() = _Loading;
+final class HomeLoading extends HomeEvent {
+  const HomeLoading();
 }

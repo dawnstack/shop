@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:logging/logging.dart';
-import 'package:shop/gen/app_localizations.dart';
+import 'package:shop/app_router.dart';
 import 'package:shop/presentation/bloc/login/login_bloc.dart';
 import 'package:shop/presentation/bloc/login/login_event.dart';
 import 'package:shop/presentation/bloc/login/login_state.dart';
@@ -18,19 +19,19 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  late final TextEditingController _phoneController;
+  late final TextEditingController _emailController;
   late final TextEditingController _passwordController;
 
   @override
   void initState() {
     super.initState();
-    _phoneController = TextEditingController();
+    _emailController = TextEditingController();
     _passwordController = TextEditingController();
   }
 
   @override
   void dispose() {
-    _phoneController.dispose();
+    _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -38,104 +39,101 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("login")),
+      appBar: AppBar(title: const Text('登录')),
       body: BlocConsumer<LoginBloc, LoginState>(
-        // 1. 使用 Freezed 的 when 替代之前的 if (state is ...)
         builder: (context, state) {
-          return state.when(
-            initial: () => _buildLoginForm(context),
-            loading: () => const Center(child: CircularProgressIndicator()),
-            success: (user) => const Center(
+          if (state is LoginLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (state is LoginSuccess) {
+            return const Center(
               child: Icon(Icons.check_circle, size: 100, color: Colors.green),
-            ),
-            failure: (message) => _buildLoginForm(context),
-          );
+            );
+          }
+
+          return _buildLoginForm(context);
         },
-        // 2. 使用 Freezed 的 maybeWhen 处理一次性监听逻辑
         listener: (BuildContext context, LoginState state) {
-          state.maybeWhen(
-            success: (user) {
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(const SnackBar(content: Text("登录成功！")));
-            },
-            failure: (message) {
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text(message)));
-            },
-            orElse: () {},
-          );
+          if (state is LoginSuccess) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('登录成功')));
+            context.go(AppRouter.home);
+          }
+
+          if (state is LoginFailure) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(state.message)));
+          }
         },
       ),
     );
   }
 
-  // 你的 UI 布局代码原封不动
   Widget _buildLoginForm(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _phoneWidget(context),
-        _passwordWidget(context),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                var phone = _phoneController.text;
-                var password = _passwordController.text;
-                // 触发 Bloc 事件
-                context.read<LoginBloc>().add(
-                  LoginEvent.loginPressed(username: phone, password: password),
-                );
-                _log.info("login $phone,$password");
-              },
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 20),
-              ),
-              child: Text(
-                AppLocalizations.of(context)!.login,
-                style: _styleInput,
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Text(
+            '使用邮箱登录',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 24),
+          _emailWidget(),
+          _passwordWidget(),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  final email = _emailController.text.trim();
+                  final password = _passwordController.text;
+                  context.read<LoginBloc>().add(
+                    LoginEvent.loginPressed(
+                      username: email,
+                      password: password,
+                    ),
+                  );
+                  _log.info('login $email');
+                },
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                ),
+                child: Text('登录', style: _styleInput),
               ),
             ),
           ),
-        ),
-        const SizedBox(height: 20),
-        Row(
-          children: [
-            TextButton(
-              onPressed: () => _log.info("register"),
-              child: Text(AppLocalizations.of(context)!.register),
-            ),
-            const Spacer(),
-            TextButton(
-              onPressed: () => _log.info("forgot password"),
-              child: Text(AppLocalizations.of(context)!.forgetPassword),
-            ),
-          ],
-        ),
-      ],
+          const SizedBox(height: 8),
+          const Text(
+            '当前版本先实现邮箱密码登录，注册和忘记密码接口可以下一步继续接。',
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
     );
   }
 
   final _styleInput = const TextStyle(color: Colors.black, fontSize: 20);
 
-  Widget _phoneWidget(BuildContext context) {
+  Widget _emailWidget() {
     return InputWidget(
-      controller: _phoneController,
-      labelText: AppLocalizations.of(context)!.labelTextPhone,
-      inputType: TextInputType.phone,
-      maxLength: 11,
+      controller: _emailController,
+      labelText: '邮箱',
+      inputType: TextInputType.emailAddress,
+      maxLength: 64,
       config: InputConfig(textStyle: _styleInput),
     );
   }
 
-  Widget _passwordWidget(BuildContext context) {
+  Widget _passwordWidget() {
     return InputWidget(
       controller: _passwordController,
-      labelText: AppLocalizations.of(context)!.labelTextPassword,
+      labelText: '密码',
       inputType: TextInputType.visiblePassword,
       maxLength: 32,
       config: InputConfig(textStyle: _styleInput),
@@ -145,5 +143,5 @@ class _LoginPageState extends State<LoginPage> {
 
 @Preview(name: "login")
 Widget getLoginWidget() {
-  return LoginPage();
+  return const LoginPage();
 }

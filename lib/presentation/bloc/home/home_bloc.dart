@@ -11,14 +11,14 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   }
 
   Future<void> _onEvent(HomeEvent event, Emitter<HomeState> emit) async {
-    await event.map(
-      loading: (_) async {
-        emit(HomeState.initial());
-        await _fetchBanners(emit);
-        await _fetchCategory(emit);
-        await _fetchProduct(emit);
-      },
-    );
+    if (event is! HomeLoading) {
+      return;
+    }
+
+    emit(HomeState.initial());
+    await _fetchBanners(emit);
+    await _fetchCategory(emit);
+    await _fetchProduct(emit);
   }
 
   Future<void> _fetchBanners(Emitter<HomeState> emit) async {

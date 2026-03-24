@@ -1,23 +1,21 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+class BaseResponse<T> {
+  final int code;
+  final String msg;
+  final T? data;
 
-part 'base_response.freezed.dart';
-part 'base_response.g.dart';
+  const BaseResponse({required this.code, required this.msg, this.data});
 
-@Freezed(genericArgumentFactories: true)
-sealed class BaseResponse<T> with _$BaseResponse<T> {
-  const factory BaseResponse({
-    required int code,
-    required String message,
-    T? data,
-  }) = _BaseResponse<T>;
-
-  const BaseResponse._();
-
-  bool get isSuccess => code == 200;
+  bool get isSuccess => code == 0;
   bool get isFailed => !isSuccess;
-  
+
   factory BaseResponse.fromJson(
     Map<String, dynamic> json,
-    T Function(Object?) fromJsonT,
-  ) => _$BaseResponseFromJson(json, fromJsonT);
+    T Function(Object? json) fromJsonT,
+  ) {
+    return BaseResponse(
+      code: (json['code'] as num?)?.toInt() ?? -1,
+      msg: (json['msg'] ?? json['message'] ?? '').toString(),
+      data: json['data'] == null ? null : fromJsonT(json['data']),
+    );
+  }
 }

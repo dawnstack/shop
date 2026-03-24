@@ -1,20 +1,33 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:shop/domain/entities/banner_data.dart';
 
-part 'banner_model.g.dart';
-part 'banner_model.freezed.dart';
+class BannerModel {
+  final String id;
+  final String title;
+  final String imageUrl;
+  final String linkUrl;
 
-@Freezed(genericArgumentFactories: true)
-sealed class BannerModel with _$BannerModel {
-  const factory BannerModel({
-    required String shopId,
-    required String imageUrl,
-  }) = _BannerModel;
+  const BannerModel({
+    required this.id,
+    required this.title,
+    required this.imageUrl,
+    required this.linkUrl,
+  });
 
-  factory BannerModel.fromJson(Map<String, dynamic> json) =>
-      _$BannerModelFromJson(json);
+  factory BannerModel.fromJson(Map<String, dynamic> json) {
+    return BannerModel(
+      id: (json['id'] ?? '').toString(),
+      title: (json['title'] ?? '').toString(),
+      imageUrl: (json['image_url'] ?? '').toString(),
+      linkUrl: (json['link_url'] ?? '').toString(),
+    );
+  }
 }
 
 extension BannerModelX on BannerModel {
-  BannerData toEntity() => BannerData(shopId: shopId, imageUrl: imageUrl);
+  BannerData toEntity() => BannerData(
+    shopId: id,
+    imageUrl: imageUrl,
+    title: title,
+    linkUrl: linkUrl,
+  );
 }

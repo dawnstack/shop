@@ -12,13 +12,13 @@ mixin RepositoryHelper {
       final response = await call();
 
       // 如果走到这里，说明 JSON 解析成功
-      if (response.code == 200) {
+      if (response.code == 0) {
         final data = response.data;
         return data != null
             ? Success(mapToEntity(data))
             : const Failure("数据为空");
       }
-      return Failure(response.message, code: response.code);
+      return Failure(response.msg, code: response.code);
     } on DioException catch (e) {
       // ✅ 关键：处理类似 {"msg": "Invalid request"} 的非标准错误
       String errorMessage = _handleDioError(e);

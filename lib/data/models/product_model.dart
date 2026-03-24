@@ -1,22 +1,38 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:shop/domain/entities/product_data.dart';
 
-part 'product_model.freezed.dart';
-part 'product_model.g.dart';
+class ProductModel {
+  final String id;
+  final String categoryId;
+  final String name;
+  final String description;
+  final int price;
+  final int stock;
+  final String imageUrl;
+  final int sales;
 
-@Freezed(genericArgumentFactories: true)
-sealed class ProductModel with _$ProductModel {
-  const factory ProductModel({
-    required String id,
-    required String name,
-    required String imageUrl,
-    required double price,
-    required double originalPrice,
-    required int sales,
-  }) = _ProductModel;
+  const ProductModel({
+    required this.id,
+    required this.categoryId,
+    required this.name,
+    required this.description,
+    required this.price,
+    required this.stock,
+    required this.imageUrl,
+    required this.sales,
+  });
 
-  factory ProductModel.fromJson(Map<String, dynamic> json) =>
-      _$ProductModelFromJson(json);
+  factory ProductModel.fromJson(Map<String, dynamic> json) {
+    return ProductModel(
+      id: (json['id'] ?? '').toString(),
+      categoryId: (json['category_id'] ?? '').toString(),
+      name: (json['name'] ?? '').toString(),
+      description: (json['description'] ?? '').toString(),
+      price: (json['price'] as num?)?.toInt() ?? 0,
+      stock: (json['stock'] as num?)?.toInt() ?? 0,
+      imageUrl: (json['cover_url'] ?? '').toString(),
+      sales: (json['sales'] as num?)?.toInt() ?? 0,
+    );
+  }
 }
 
 extension ProductModelX on ProductModel {
@@ -24,8 +40,10 @@ extension ProductModelX on ProductModel {
     id: id,
     name: name,
     imageUrl: imageUrl,
-    price: price,
-    originalPrice: originalPrice,
+    description: description,
+    price: price / 100,
+    originalPrice: price / 100,
     sales: sales,
+    stock: stock,
   );
 }

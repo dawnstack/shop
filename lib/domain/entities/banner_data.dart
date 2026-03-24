@@ -1,9 +1,13 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+class BannerData {
+  final String shopId;
+  final String imageUrl;
+  final String title;
+  final String linkUrl;
 
-part 'banner_data.freezed.dart';
-
-@freezed
-sealed class BannerData with _$BannerData {
-  const factory BannerData({required String shopId, required String imageUrl}) =
-      _BannerData;
+  const BannerData({
+    required this.shopId,
+    required this.imageUrl,
+    this.title = '',
+    this.linkUrl = '',
+  });
 }

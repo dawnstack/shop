@@ -1,19 +1,30 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:shop/domain/entities/user_data.dart'; // 确保路径正确
+import 'package:shop/domain/entities/user_data.dart';
 
-part 'login_state.freezed.dart';
+sealed class LoginState {
+  const LoginState();
 
-@freezed
-class LoginState with _$LoginState {
-  // 1. 初始状态：页面刚打开
-  const factory LoginState.initial() = _Initial;
+  factory LoginState.initial() = LoginInitial;
+  factory LoginState.loading() = LoginLoading;
+  factory LoginState.success(UserData user) = LoginSuccess;
+  factory LoginState.failure(String message) = LoginFailure;
+}
 
-  // 2. 加载状态：点击登录按钮，正在请求接口
-  const factory LoginState.loading() = _Loading;
+final class LoginInitial extends LoginState {
+  const LoginInitial();
+}
 
-  // 3. 成功状态：拿到 UserData，准备跳转
-  const factory LoginState.success(UserData user) = _Success;
+final class LoginLoading extends LoginState {
+  const LoginLoading();
+}
 
-  // 4. 失败状态：捕获到异常，返回错误信息
-  const factory LoginState.failure(String message) = _Failure;
+final class LoginSuccess extends LoginState {
+  final UserData user;
+
+  const LoginSuccess(this.user);
+}
+
+final class LoginFailure extends LoginState {
+  final String message;
+
+  const LoginFailure(this.message);
 }

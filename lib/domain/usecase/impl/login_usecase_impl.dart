@@ -1,4 +1,3 @@
-import 'package:shop/common/utils/utils.dart';
 import 'package:shop/domain/entities/data_result.dart';
 import 'package:shop/domain/entities/user_data.dart';
 import 'package:shop/domain/repositories/login_repository.dart';
@@ -9,8 +8,7 @@ class LoginUsecaseImpl extends LoginUsecase {
   LoginUsecaseImpl(this._repository);
 
   @override
-  Future<DataResult<UserData>> login(String phone, String password) {
-    var finalPassword = Utils.generateMd5(phone, password);
-    return _repository.login(phone, finalPassword);
+  Future<DataResult<UserData>> login(String email, String password) {
+    return _repository.login(email, password);
   }
 }
