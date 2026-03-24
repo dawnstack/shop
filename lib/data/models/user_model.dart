@@ -32,9 +32,7 @@ class UserModel {
       avatarUrl: (user['avatar_url'] ?? '').toString(),
     );
   }
-}
 
-extension UserModelX on UserModel {
   UserData toEntity() => UserData(
     accessToken: accessToken,
     refreshToken: refreshToken,
