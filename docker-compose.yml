@@ -19,6 +19,14 @@ services:
       flutter pub get &&
       flutter build web --release
       "
+  web-preview:
+    image: nginx:1.29.4-alpine
+    depends_on:
+      - web-build
+    volumes:
+      - ./build/web:/usr/share/nginx/html:ro
+    ports:
+      - "8081:80"
 
 volumes:
   flutter:
