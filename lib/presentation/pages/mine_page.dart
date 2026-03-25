@@ -130,6 +130,20 @@ class _MinePageState extends State<MinePage>
                   title: const Text('登录态'),
                   subtitle: const Text('已缓存 access token / refresh token'),
                 ),
+                ListTile(
+                  leading: const Icon(Icons.location_on_outlined),
+                  title: const Text('地址管理'),
+                  subtitle: const Text('查看、新增、编辑、删除收货地址'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => context.push(AppRouter.addresses),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.receipt_long_outlined),
+                  title: const Text('我的订单'),
+                  subtitle: const Text('查看订单列表和订单详情'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => context.push(AppRouter.orders),
+                ),
                 const SizedBox(height: 24),
                 OutlinedButton(
                   onPressed: _logout,

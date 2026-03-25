@@ -32,6 +32,33 @@ class TokenManager {
     await saveUser(user);
   }
 
+  Future<void> updateSession({
+    required String accessToken,
+    required String refreshToken,
+    UserData? user,
+  }) async {
+    await saveToken(accessToken);
+    await saveRefreshToken(refreshToken);
+    if (user != null) {
+      await saveUser(user);
+      return;
+    }
+
+    final cached = await getCachedUser();
+    if (cached != null) {
+      await saveUser(
+        UserData(
+          accessToken: accessToken,
+          refreshToken: refreshToken,
+          userId: cached.userId,
+          userName: cached.userName,
+          email: cached.email,
+          avatarUrl: cached.avatarUrl,
+        ),
+      );
+    }
+  }
+
   /// 获取 Token
   Future<String?> getToken() async {
     return _storage.getString(_tokenKey);

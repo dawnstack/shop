@@ -1,8 +1,10 @@
 import 'package:dio/dio.dart';
+import 'package:shop/data/models/address_model.dart';
 import 'package:shop/data/models/banner_model.dart';
 import 'package:shop/data/models/base_response.dart';
 import 'package:shop/data/models/cart_item_model.dart';
 import 'package:shop/data/models/category_model.dart';
+import 'package:shop/data/models/order_model.dart';
 import 'package:shop/data/models/product_model.dart';
 import 'package:shop/data/models/user_model.dart';
 import 'package:shop/data/models/video_model.dart';
@@ -35,6 +37,17 @@ class ApiService {
         'password': password,
         if (nickname != null && nickname.isNotEmpty) 'nickname': nickname,
       },
+    );
+    return BaseResponse.fromJson(
+      _asMap(response.data),
+      (json) => UserModel.fromJson(_asMap(json)),
+    );
+  }
+
+  Future<BaseResponse<UserModel>> refreshToken(String refreshToken) async {
+    final response = await _dio.post(
+      '/auth/refresh',
+      data: {'refresh_token': refreshToken},
     );
     return BaseResponse.fromJson(
       _asMap(response.data),
@@ -85,6 +98,47 @@ class ApiService {
     );
   }
 
+  Future<BaseResponse<List<AddressModel>>> getAddresses() async {
+    final response = await _dio.get('/user/addresses');
+    return BaseResponse.fromJson(_asMap(response.data), (json) {
+      return _asList(
+        json,
+      ).map((item) => AddressModel.fromJson(_asMap(item))).toList();
+    });
+  }
+
+  Future<BaseResponse<Map<String, dynamic>>> createAddress(
+    AddressModel address,
+  ) async {
+    final response = await _dio.post('/user/address', data: address.toPayload());
+    return BaseResponse.fromJson(
+      _asMap(response.data),
+      (json) => _asMap(json),
+    );
+  }
+
+  Future<BaseResponse<Map<String, dynamic>>> updateAddress(
+    String id,
+    AddressModel address,
+  ) async {
+    final response = await _dio.put(
+      '/user/address/$id',
+      data: address.toPayload(),
+    );
+    return BaseResponse.fromJson(
+      _asMap(response.data),
+      (json) => _asMap(json),
+    );
+  }
+
+  Future<BaseResponse<Map<String, dynamic>>> deleteAddress(String id) async {
+    final response = await _dio.delete('/user/address', queryParameters: {'id': id});
+    return BaseResponse.fromJson(
+      _asMap(response.data),
+      (json) => _asMap(json),
+    );
+  }
+
   Future<BaseResponse<List<CartItemModel>>> getCart() async {
     final response = await _dio.get('/cart');
     return BaseResponse.fromJson(_asMap(response.data), (json) {
@@ -92,6 +146,82 @@ class ApiService {
         json,
       ).map((item) => CartItemModel.fromJson(_asMap(item))).toList();
     });
+  }
+
+  Future<BaseResponse<Map<String, dynamic>>> addToCart({
+    required String productId,
+    int quantity = 1,
+    bool checked = true,
+  }) async {
+    final response = await _dio.post(
+      '/cart',
+      data: {
+        'product_id': int.tryParse(productId) ?? productId,
+        'quantity': quantity,
+        'checked': checked,
+      },
+    );
+    return BaseResponse.fromJson(
+      _asMap(response.data),
+      (json) => _asMap(json),
+    );
+  }
+
+  Future<BaseResponse<Map<String, dynamic>>> updateCartItem(
+    String id, {
+    required int quantity,
+    required bool checked,
+  }) async {
+    final response = await _dio.put(
+      '/cart/$id',
+      data: {'quantity': quantity, 'checked': checked},
+    );
+    return BaseResponse.fromJson(
+      _asMap(response.data),
+      (json) => _asMap(json),
+    );
+  }
+
+  Future<BaseResponse<Map<String, dynamic>>> deleteCartItem(String id) async {
+    final response = await _dio.delete('/cart', queryParameters: {'id': id});
+    return BaseResponse.fromJson(
+      _asMap(response.data),
+      (json) => _asMap(json),
+    );
+  }
+
+  Future<BaseResponse<List<OrderModel>>> getOrders() async {
+    final response = await _dio.get('/orders');
+    return BaseResponse.fromJson(_asMap(response.data), (json) {
+      return _asList(
+        json,
+      ).map((item) => OrderModel.fromJson(_asMap(item))).toList();
+    });
+  }
+
+  Future<BaseResponse<OrderModel>> getOrderDetail(String id) async {
+    final response = await _dio.get('/orders/$id');
+    return BaseResponse.fromJson(
+      _asMap(response.data),
+      (json) => OrderModel.fromJson(_asMap(json)),
+    );
+  }
+
+  Future<BaseResponse<OrderModel>> createOrder({
+    required String addressId,
+    required String idempotencyKey,
+  }) async {
+    final response = await _dio.post(
+      '/orders',
+      data: {
+        'address_id': int.tryParse(addressId) ?? addressId,
+        'idempotency_key': idempotencyKey,
+      },
+    );
+    return BaseResponse.fromJson(
+      _asMap(response.data),
+      (json) => OrderModel.fromJson(_asMap(json)),
+    );
   }
 
   Future<BaseResponse<List<VideoModel>>> getRecommendedVideos() async {

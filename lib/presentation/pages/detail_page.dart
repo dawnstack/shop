@@ -5,7 +5,7 @@ import 'package:shop/data/datasources/remote/api_service.dart';
 import 'package:shop/data/models/product_model.dart';
 import 'package:shop/presentation/widgets/images/app_image.dart';
 
-class DetailPage extends StatelessWidget {
+class DetailPage extends StatefulWidget {
   final String id;
   final String name;
   final String? imageUrl;
@@ -23,8 +23,15 @@ class DetailPage extends StatelessWidget {
     this.sales,
   });
 
+  @override
+  State<DetailPage> createState() => _DetailPageState();
+}
+
+class _DetailPageState extends State<DetailPage> {
+  int _quantity = 1;
+
   Future<ProductModel?> _loadProduct() async {
-    final response = await di.getIt<ApiService>().getProductDetail(id);
+    final response = await di.getIt<ApiService>().getProductDetail(widget.id);
     return response.data;
   }
 
@@ -34,12 +41,12 @@ class DetailPage extends StatelessWidget {
       future: _loadProduct(),
       builder: (context, snapshot) {
         final product = snapshot.data;
-        final resolvedName = product?.name ?? name;
-        final resolvedImage = product?.imageUrl ?? imageUrl ?? '';
-        final resolvedPrice = product != null ? product.price / 100 : price;
+        final resolvedName = product?.name ?? widget.name;
+        final resolvedImage = product?.imageUrl ?? widget.imageUrl ?? '';
+        final resolvedPrice = product != null ? product.price / 100 : widget.price;
         final resolvedOriginalPrice =
-            product != null ? product.price / 100 : originalPrice;
-        final resolvedSales = product?.sales ?? sales;
+            product != null ? product.price / 100 : widget.originalPrice;
+        final resolvedSales = product?.sales ?? widget.sales;
         final description = product?.description ?? '暂无更多商品描述';
         final hasDiscount =
             resolvedOriginalPrice != null &&
@@ -72,7 +79,7 @@ class DetailPage extends StatelessWidget {
               SizedBox(height: 20.h),
               Text(resolvedName, style: theme.textTheme.headlineSmall),
               SizedBox(height: 8.h),
-              Text('商品 ID: $id', style: theme.textTheme.bodyMedium),
+              Text('商品 ID: ${widget.id}', style: theme.textTheme.bodyMedium),
               if (resolvedPrice != null) ...[
                 SizedBox(height: 16.h),
                 Row(
@@ -113,6 +120,41 @@ class DetailPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16.r),
                 ),
                 child: Text(description, style: theme.textTheme.bodyLarge),
+              ),
+              SizedBox(height: 24.h),
+              Row(
+                children: [
+                  const Text('数量'),
+                  const SizedBox(width: 12),
+                  IconButton(
+                    onPressed: _quantity > 1
+                        ? () => setState(() => _quantity -= 1)
+                        : null,
+                    icon: const Icon(Icons.remove_circle_outline),
+                  ),
+                  Text('$_quantity'),
+                  IconButton(
+                    onPressed: () => setState(() => _quantity += 1),
+                    icon: const Icon(Icons.add_circle_outline),
+                  ),
+                ],
+              ),
+              SizedBox(height: 16.h),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    await di.getIt<ApiService>().addToCart(
+                      productId: widget.id,
+                      quantity: _quantity,
+                    );
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(const SnackBar(content: Text('已加入购物车')));
+                  },
+                  child: const Text('加入购物车'),
+                ),
               ),
             ],
           ),
