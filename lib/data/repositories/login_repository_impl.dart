@@ -25,4 +25,22 @@ class LoginRepositoryImpl extends LoginRepository with RepositoryHelper {
 
     return result;
   }
+
+  @override
+  Future<DataResult<UserData>> register(
+    String email,
+    String password, {
+    String? nickname,
+  }) async {
+    final result = await mapToResult<UserModel, UserData>(
+      call: () => _apiService.register(email, password, nickname: nickname),
+      mapToEntity: (models) => models.toEntity(),
+    );
+
+    if (result case Success(data: final user)) {
+      await _tokenManager.saveSession(user);
+    }
+
+    return result;
+  }
 }

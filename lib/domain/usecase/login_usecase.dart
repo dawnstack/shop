@@ -3,4 +3,9 @@ import 'package:shop/domain/entities/user_data.dart';
 
 abstract class LoginUsecase {
   Future<DataResult<UserData>> login(String email, String password);
+  Future<DataResult<UserData>> register(
+    String email,
+    String password, {
+    String? nickname,
+  });
 }

@@ -1,19 +1,20 @@
 # API Implementation Status
 
-Last updated: 2026-03-24
+Last updated: 2026-03-25
 
 ## Summary
 
 当前项目已经把一条“可运行的基础商城主流程”接到了 `API.md`：
 
-- 已实现：登录、首页数据、商品详情、购物车读取、个人资料读取、视频推荐读取
-- 部分实现：登录态缓存、Bearer 鉴权、统一响应解析、Android Docker 编译方案
+- 已实现：登录、注册、首页数据、商品详情、购物车读取、个人资料读取、视频推荐读取
+- 部分实现：登录态缓存、Bearer 鉴权、统一响应解析、Docker Web 构建方案
 - 未实现：注册、刷新 token、地址管理、购物车写操作、订单、商品搜索等
 
 ## Implemented
 
 | Interface | Status | Code / UI | Notes |
 | --- | --- | --- | --- |
+| `POST /api/auth/register` | Implemented | Code + UI | 注册页已实现，成功后会直接缓存登录态并返回主页 |
 | `POST /api/auth/login` | Implemented | Code + UI | 登录页已改为邮箱密码登录，成功后缓存 token 和用户信息 |
 | `GET /api/user/profile` | Implemented | Code + UI | 我的页面会读取用户资料；请求失败时回退到本地缓存 |
 | `GET /api/home/banners` | Implemented | Code + UI | 首页 banner 已对接真实接口 |
@@ -30,7 +31,7 @@ Last updated: 2026-03-24
 | `Authorization: Bearer <access_token>` | Partial | 已自动注入请求头，但还没有 401 自动刷新与重试 |
 | Unified response `code/msg/data` | Partial | 已完成统一解析；还没有按业务码做更细粒度错误映射 |
 | `GET /api/user/profile` 更新缓存 | Partial | 成功后会刷新本地用户缓存，但没有用户资料编辑入口 |
-| Docker Android build | Partial | 已提供 `docker-compose.yml`；是否成功取决于宿主机 Docker/OrbStack 与当前源码可编译状态 |
+| Docker Web build | Implemented | 已提供 `web-build` 和 `web-preview` 服务，当前可成功构建 `build/web` |
 
 ## Not Implemented
 
@@ -38,7 +39,6 @@ Last updated: 2026-03-24
 
 | Interface | Status | Notes |
 | --- | --- | --- |
-| `POST /api/auth/register` | Not implemented | 无注册页面、无请求实现 |
 | `POST /api/auth/refresh` | Not implemented | 无 token 刷新逻辑 |
 
 ### User
@@ -89,12 +89,13 @@ Last updated: 2026-03-24
 在 OrbStack / Docker 环境中可使用：
 
 ```bash
-docker compose run --rm android-build
+docker compose run --rm web-build
+docker compose up web-preview
 ```
 
 说明：
 
-- 容器镜像：`plugfox/flutter:3.41.5-android`
-- 仅构建 Android APK
-- Flutter / Gradle / 配置缓存都挂到外部 Docker volume `flutter`
-- Android SDK 会持久化到 volume 内的 `/flutter/android-sdk`
+- 容器镜像：`plugfox/flutter:3.41.5-web`
+- Web 构建产物输出到 `build/web`
+- `web-preview` 会通过 `http://localhost:8081` 提供静态预览
+- Flutter / Pub / 构建缓存都挂到外部 Docker volume `flutter`

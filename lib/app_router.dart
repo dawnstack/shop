@@ -5,10 +5,12 @@ import 'package:shop/presentation/bloc/login/login_bloc.dart';
 import 'package:shop/presentation/pages/detail_page.dart';
 import 'package:shop/presentation/pages/login_page.dart';
 import 'package:shop/presentation/pages/main_page.dart';
+import 'package:shop/presentation/pages/register_page.dart';
 
 class AppRouter {
   static const String home = '/';
   static const String login = '/login';
+  static const String register = '/register';
   static const String detail = '/detail';
 
   static final router = GoRouter(
@@ -21,6 +23,15 @@ class AppRouter {
           return BlocProvider(
             create: (_) => di.getIt<LoginBloc>(),
             child: const LoginPage(),
+          );
+        },
+      ),
+      GoRoute(
+        path: register,
+        builder: (context, state) {
+          return BlocProvider(
+            create: (_) => di.getIt<LoginBloc>(),
+            child: const RegisterPage(),
           );
         },
       ),

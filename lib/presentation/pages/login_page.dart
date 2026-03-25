@@ -109,9 +109,9 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
-            '当前版本先实现邮箱密码登录，注册和忘记密码接口可以下一步继续接。',
-            textAlign: TextAlign.center,
+          TextButton(
+            onPressed: () => context.push(AppRouter.register),
+            child: const Text('还没有账号？去注册'),
           ),
         ],
       ),

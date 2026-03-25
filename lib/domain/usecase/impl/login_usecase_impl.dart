@@ -11,4 +11,13 @@ class LoginUsecaseImpl extends LoginUsecase {
   Future<DataResult<UserData>> login(String email, String password) {
     return _repository.login(email, password);
   }
+
+  @override
+  Future<DataResult<UserData>> register(
+    String email,
+    String password, {
+    String? nickname,
+  }) {
+    return _repository.register(email, password, nickname: nickname);
+  }
 }

@@ -23,6 +23,25 @@ class ApiService {
     );
   }
 
+  Future<BaseResponse<UserModel>> register(
+    String email,
+    String password, {
+    String? nickname,
+  }) async {
+    final response = await _dio.post(
+      '/auth/register',
+      data: {
+        'email': email,
+        'password': password,
+        if (nickname != null && nickname.isNotEmpty) 'nickname': nickname,
+      },
+    );
+    return BaseResponse.fromJson(
+      _asMap(response.data),
+      (json) => UserModel.fromJson(_asMap(json)),
+    );
+  }
+
   Future<BaseResponse<List<BannerModel>>> getBanner() async {
     final response = await _dio.get('/home/banners');
     return BaseResponse.fromJson(_asMap(response.data), (json) {

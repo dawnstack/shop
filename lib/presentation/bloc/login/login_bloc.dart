@@ -12,15 +12,27 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   }
 
   Future<void> _onEvent(LoginEvent event, Emitter<LoginState> emit) async {
-    if (event is! LoginPressed) {
+    emit(LoginState.loading());
+
+    if (event is LoginPressed) {
+      final result = await loginUsecase.login(event.username, event.password);
+      emit(switch (result) {
+        Success(data: final user) => LoginState.success(user, message: '登录成功'),
+        Failure(message: final msg) => LoginState.failure(msg),
+      });
       return;
     }
 
-    emit(LoginState.loading());
-    final result = await loginUsecase.login(event.username, event.password);
-    emit(switch (result) {
-      Success(data: final user) => LoginState.success(user),
-      Failure(message: final msg) => LoginState.failure(msg),
-    });
+    if (event is RegisterPressed) {
+      final result = await loginUsecase.register(
+        event.username,
+        event.password,
+        nickname: event.nickname,
+      );
+      emit(switch (result) {
+        Success(data: final user) => LoginState.success(user, message: '注册成功'),
+        Failure(message: final msg) => LoginState.failure(msg),
+      });
+    }
   }
 }
