@@ -4,18 +4,24 @@ import 'package:shop/common/di/injection_container.dart' as di;
 import 'package:shop/presentation/bloc/login/login_bloc.dart';
 import 'package:shop/presentation/pages/address_page.dart';
 import 'package:shop/presentation/pages/detail_page.dart';
+import 'package:shop/presentation/pages/edit_profile_page.dart';
+import 'package:shop/presentation/pages/health_page.dart';
 import 'package:shop/presentation/pages/login_page.dart';
 import 'package:shop/presentation/pages/main_page.dart';
 import 'package:shop/presentation/pages/order_detail_page.dart';
 import 'package:shop/presentation/pages/orders_page.dart';
+import 'package:shop/presentation/pages/product_search_page.dart';
 import 'package:shop/presentation/pages/register_page.dart';
 
 class AppRouter {
   static const String home = '/';
   static const String login = '/login';
   static const String register = '/register';
+  static const String editProfile = '/profile/edit';
   static const String addresses = '/addresses';
   static const String orders = '/orders';
+  static const String productSearch = '/products/search';
+  static const String health = '/health';
   static const String detail = '/detail';
 
   static final router = GoRouter(
@@ -41,10 +47,21 @@ class AppRouter {
         },
       ),
       GoRoute(
+        path: editProfile,
+        builder: (context, state) => const EditProfilePage(),
+      ),
+      GoRoute(
         path: addresses,
         builder: (context, state) => const AddressPage(),
       ),
       GoRoute(path: orders, builder: (context, state) => const OrdersPage()),
+      GoRoute(
+        path: productSearch,
+        builder: (context, state) => ProductSearchPage(
+          initialKeyword: state.uri.queryParameters['keyword'] ?? '',
+        ),
+      ),
+      GoRoute(path: health, builder: (context, state) => const HealthPage()),
       GoRoute(
         path: '$orders/:id',
         builder: (context, state) {

@@ -131,6 +131,16 @@ class _MinePageState extends State<MinePage>
                   subtitle: const Text('已缓存 access token / refresh token'),
                 ),
                 ListTile(
+                  leading: const Icon(Icons.edit_outlined),
+                  title: const Text('编辑资料'),
+                  subtitle: const Text('修改昵称和头像地址'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () async {
+                    await context.push(AppRouter.editProfile);
+                    await _refresh();
+                  },
+                ),
+                ListTile(
                   leading: const Icon(Icons.location_on_outlined),
                   title: const Text('地址管理'),
                   subtitle: const Text('查看、新增、编辑、删除收货地址'),
@@ -143,6 +153,13 @@ class _MinePageState extends State<MinePage>
                   subtitle: const Text('查看订单列表和订单详情'),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => context.push(AppRouter.orders),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.monitor_heart_outlined),
+                  title: const Text('服务状态'),
+                  subtitle: const Text('查看 /ping 返回的服务健康信息'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => context.push(AppRouter.health),
                 ),
                 const SizedBox(height: 24),
                 OutlinedButton(

@@ -82,6 +82,15 @@ class ApiService {
     });
   }
 
+  Future<BaseResponse<List<ProductModel>>> getPersonalizedProducts() async {
+    final response = await _dio.get('/home/recommend/personalized');
+    return BaseResponse.fromJson(_asMap(response.data), (json) {
+      return _asList(
+        json,
+      ).map((item) => ProductModel.fromJson(_asMap(item))).toList();
+    });
+  }
+
   Future<BaseResponse<ProductModel>> getProductDetail(String id) async {
     final response = await _dio.get('/products/$id');
     return BaseResponse.fromJson(
@@ -90,11 +99,43 @@ class ApiService {
     );
   }
 
+  Future<BaseResponse<List<ProductModel>>> searchProducts({
+    String? keyword,
+    String? sort,
+  }) async {
+    final response = await _dio.get(
+      '/products/search',
+      queryParameters: {
+        if (keyword != null && keyword.isNotEmpty) 'keyword': keyword,
+        if (sort != null && sort.isNotEmpty) 'sort': sort,
+      },
+    );
+    return BaseResponse.fromJson(_asMap(response.data), (json) {
+      return _asList(
+        json,
+      ).map((item) => ProductModel.fromJson(_asMap(item))).toList();
+    });
+  }
+
   Future<BaseResponse<UserModel>> getProfile() async {
     final response = await _dio.get('/user/profile');
     return BaseResponse.fromJson(
       _asMap(response.data),
       (json) => UserModel.fromJson(_asMap(json)),
+    );
+  }
+
+  Future<BaseResponse<Map<String, dynamic>>> updateProfile({
+    required String nickname,
+    required String avatarUrl,
+  }) async {
+    final response = await _dio.put(
+      '/user/profile',
+      data: {'nickname': nickname, 'avatar_url': avatarUrl},
+    );
+    return BaseResponse.fromJson(
+      _asMap(response.data),
+      (json) => _asMap(json),
     );
   }
 
@@ -224,6 +265,27 @@ class ApiService {
     );
   }
 
+  Future<BaseResponse<Map<String, dynamic>>> createSeckillOrder({
+    required String productId,
+    required int quantity,
+    required String addressId,
+    required String idempotencyKey,
+  }) async {
+    final response = await _dio.post(
+      '/seckill/orders',
+      data: {
+        'product_id': int.tryParse(productId) ?? productId,
+        'quantity': quantity,
+        'address_id': int.tryParse(addressId) ?? addressId,
+        'idempotency_key': idempotencyKey,
+      },
+    );
+    return BaseResponse.fromJson(
+      _asMap(response.data),
+      (json) => _asMap(json),
+    );
+  }
+
   Future<BaseResponse<List<VideoModel>>> getRecommendedVideos() async {
     final response = await _dio.get('/videos/recommend');
     return BaseResponse.fromJson(_asMap(response.data), (json) {
@@ -231,6 +293,14 @@ class ApiService {
         json,
       ).map((item) => VideoModel.fromJson(_asMap(item))).toList();
     });
+  }
+
+  Future<BaseResponse<Map<String, dynamic>>> ping() async {
+    final response = await _dio.get('/ping');
+    return BaseResponse.fromJson(
+      _asMap(response.data),
+      (json) => _asMap(json),
+    );
   }
 
   Map<String, dynamic> _asMap(Object? value) {

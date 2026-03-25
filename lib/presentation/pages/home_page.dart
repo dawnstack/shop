@@ -1,11 +1,16 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:shop/app_router.dart';
+import 'package:shop/common/di/injection_container.dart' as di;
+import 'package:shop/data/datasources/local/token_manager.dart';
+import 'package:shop/data/datasources/remote/api_service.dart';
+import 'package:shop/data/models/product_model.dart';
 import 'package:shop/domain/entities/product_data.dart';
 import 'package:shop/presentation/bloc/home/home_bloc.dart';
 import 'package:shop/presentation/bloc/home/home_event.dart';
@@ -21,6 +26,8 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage>
     with AutomaticKeepAliveClientMixin {
+  late Future<List<ProductData>> _personalizedFuture;
+
   @override
   bool get wantKeepAlive => true;
 
@@ -28,6 +35,26 @@ class _HomePageState extends State<HomePage>
   void initState() {
     super.initState();
     context.read<HomeBloc>().add(HomeEvent.loading());
+    _personalizedFuture = _loadPersonalizedProducts();
+  }
+
+  Future<List<ProductData>> _loadPersonalizedProducts() async {
+    final isLoggedIn = await di.getIt<TokenManager>().isLoggedIn();
+    if (!isLoggedIn) {
+      return <ProductData>[];
+    }
+
+    final response = await di.getIt<ApiService>().getPersonalizedProducts();
+    return (response.data ?? <ProductModel>[])
+        .map((item) => item.toEntity())
+        .toList();
+  }
+
+  Future<void> _refresh() async {
+    context.read<HomeBloc>().add(HomeEvent.loading());
+    setState(() {
+      _personalizedFuture = _loadPersonalizedProducts();
+    });
   }
 
   @override
@@ -35,8 +62,64 @@ class _HomePageState extends State<HomePage>
     super.build(context);
     return Scaffold(
       body: SafeArea(
-        child: CustomScrollView(
-          slivers: [_buildBanner(), _buildCategory(), _buildProduct()],
+        child: RefreshIndicator(
+          onRefresh: _refresh,
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              _buildSearchEntry(),
+              _buildBanner(),
+              _buildCategory(),
+              _buildProduct(),
+              _buildPersonalizedProduct(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSearchEntry() {
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(16.w, 12.h, 16.w, 4.h),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(18.r),
+          onTap: () => context.push(AppRouter.productSearch),
+          child: Ink(
+            padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18.r),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 16,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.search, color: Colors.grey.shade600, size: 20.sp),
+                SizedBox(width: 10.w),
+                Expanded(
+                  child: Text(
+                    '搜索你想要的商品',
+                    style: TextStyle(
+                      color: Colors.grey.shade600,
+                      fontSize: 14.sp,
+                    ),
+                  ),
+                ),
+                Icon(
+                  Icons.tune_rounded,
+                  color: const Color(0xFFFF5000),
+                  size: 20.sp,
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -266,9 +349,68 @@ class _HomePageState extends State<HomePage>
     );
   }
 
+  Widget _buildPersonalizedProduct() {
+    return SliverToBoxAdapter(
+      child: FutureBuilder<List<ProductData>>(
+        future: _personalizedFuture,
+        builder: (context, snapshot) {
+          final products = snapshot.data ?? <ProductData>[];
+          if (products.isEmpty) {
+            return const SizedBox.shrink();
+          }
+
+          return Padding(
+            padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 24.h),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: EdgeInsets.only(bottom: 12.h),
+                  child: Row(
+                    children: [
+                      Text(
+                        '为你推荐',
+                        style: TextStyle(
+                          fontSize: 20.sp,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      SizedBox(width: 8.w),
+                      Icon(
+                        Icons.auto_awesome_rounded,
+                        size: 18.sp,
+                        color: const Color(0xFFFF5000),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  height: 250.h,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: products.length,
+                    separatorBuilder: (_, __) => SizedBox(width: 12.w),
+                    itemBuilder: (context, index) {
+                      final product = products[index];
+                      return SizedBox(
+                        width: 180.w,
+                        child: _buildProductCard(context, product),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   Widget _buildProductCard(BuildContext context, ProductData product) {
     return GestureDetector(
       onTap: () {
+        HapticFeedback.lightImpact();
         context.push(
           AppRouter.detail,
           extra: {
